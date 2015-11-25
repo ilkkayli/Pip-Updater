@@ -22,11 +22,19 @@ class Program(QDialog, mainGui.Ui_Dialog):
         self.workerThread = WorkerThread()
         self.connect(self.updateButton, SIGNAL("clicked()"), self.getDists)
         self.connect(self.workerThread, SIGNAL("exception()"), self.threadDone)
-        self.connect(self.quitButton, SIGNAL("clicked()"), self.exitApp)          
+        self.connect(self.quitButton, SIGNAL("clicked()"), self.exitApp)
+        self.connect(self.workerThread, SIGNAL("changed(QString)"), self.updateLabel)
+        self.connect(self.workerThread, SIGNAL("updateProgressbar(QString)"), self.updateProgressbar)
       
     #initializes the workerThread that does the upgrading   
     def getDists(self):
         self.workerThread.start()
+        
+    def updateLabel(self, text):
+        self.label.setText(text)
+        
+    def updateProgressbar(self, val):
+        self.progressBar.setValue(int(val))
         
     def threadDone(self):
         QMessageBox.warning(self, "Error", "Python not found! Please install it first.")      
@@ -45,8 +53,7 @@ class WorkerThread(QThread):
         try:
            python_version = subprocess.check_output("Python --version")
            
-           print python_version
-           form.label.setText("Updating...")
+           self.emit(SIGNAL("changed(QString)"), "Updating...")
             
            batcmd="pip freeze"
            dists = subprocess.check_output(batcmd)
@@ -81,11 +88,11 @@ class WorkerThread(QThread):
                    if len(new_item) > 2:
                        subprocess.call("pip install --upgrade " + new_item)
                        valProgressbar = valProgressbar + percents
-                       form.progressBar.setValue(valProgressbar)
+                       self.emit(SIGNAL("updateProgressbar(QString)"), str(valProgressbar))
              
             #finalize the UI after updating           
-           form.progressBar.setValue(100) 
-           form.label.setText("Finished!")
+           self.emit(SIGNAL("updateProgressbar(QString)"), str(100)) 
+           self.emit(SIGNAL("changed(QString)"), "Finished!")
                 
         except OSError as e:
             self.emit(SIGNAL("exception()")) 
