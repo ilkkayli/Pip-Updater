@@ -24,8 +24,16 @@ class Program(QDialog, mainGui.Ui_Dialog):
         self.connect(self.workerThread, SIGNAL("exception()"), self.threadDone)
         self.connect(self.quitButton, SIGNAL("clicked()"), self.exitApp)
         self.connect(self.workerThread, SIGNAL("changed(QString)"), self.updateLabel)
-        self.connect(self.workerThread, SIGNAL("updateProgressbar(QString)"), self.updateProgressbar)
-      
+        self.connect(self.workerThread, SIGNAL("updateProgressbar(QString)"), self.updateProgressbar)        
+        self.connect(self.workerThread, SIGNAL("appendToTextBrowser(QString)"), self.updateTextBrowser)        
+        
+        #next four lines are for toggling textbrowser visibility. There might be a more sophisticated way to do this..
+        self.connect(self.showDetailsButton, SIGNAL("clicked()"), self.showTextBrowser)         
+        self.textBrowser.hide() #hide textbrowser by default
+        self.resize(461, 200)
+        self.connect(self.hideDetailsButton, SIGNAL("clicked()"), self.hideTextBrowser)
+        self.hideDetailsButton.hide()
+              
     #initializes the workerThread that does the upgrading   
     def getDists(self):
         self.workerThread.start()
@@ -36,6 +44,21 @@ class Program(QDialog, mainGui.Ui_Dialog):
     def updateProgressbar(self, val):
         self.progressBar.setValue(int(val))
         
+    def showTextBrowser(self): 
+        self.textBrowser.show()
+        self.hideDetailsButton.show()
+        self.showDetailsButton.hide()
+        self.resize(461, 444)
+        
+    def hideTextBrowser(self): 
+        self.textBrowser.hide()
+        self.showDetailsButton.show()
+        self.hideDetailsButton.hide()
+        self.resize(461, 200)
+        
+    def updateTextBrowser(self, text):
+        self.textBrowser.append(text)    
+          
     def threadDone(self):
         QMessageBox.warning(self, "Error", "Python not found! Please install it first.")      
       
@@ -49,10 +72,10 @@ class WorkerThread(QThread):
         super(WorkerThread, self).__init__(parent)
         
     def run(self):                      
-        
+                
         try:
-           python_version = subprocess.check_output("Python --version")
-           
+           python_version = subprocess.check_output("Python --version") 
+        
            self.emit(SIGNAL("changed(QString)"), "Updating...")
             
            batcmd="pip freeze"
@@ -86,16 +109,19 @@ class WorkerThread(QThread):
                    char_index = i.find("\n")
                    new_item = i[char_index + 1:]
                    if len(new_item) > 2:
+                       self.emit(SIGNAL("appendToTextBrowser(QString)"), "Upgrading " + new_item)
                        subprocess.call("pip install --upgrade " + new_item)
                        valProgressbar = valProgressbar + percents
                        self.emit(SIGNAL("updateProgressbar(QString)"), str(valProgressbar))
+                       self.emit(SIGNAL("changed(QString)"), "Upgrading " + new_item)
+                       
              
             #finalize the UI after updating           
            self.emit(SIGNAL("updateProgressbar(QString)"), str(100)) 
            self.emit(SIGNAL("changed(QString)"), "Finished!")
                 
         except OSError as e:
-            self.emit(SIGNAL("exception()")) 
+            self.emit(SIGNAL("exception()"))
 
 app = QApplication(sys.argv)
 form = Program()
