@@ -21,7 +21,8 @@ class Program(QDialog, mainGui.Ui_Dialog):
         
         self.workerThread = WorkerThread()
         self.connect(self.updateButton, SIGNAL("clicked()"), self.getDists)
-        self.connect(self.workerThread, SIGNAL("exception()"), self.threadDone)
+        self.connect(self.workerThread, SIGNAL("exception()"), self.exceptionFound)
+        self.connect(self.workerThread, SIGNAL("threadDone()"), self.threadDone)
         self.connect(self.quitButton, SIGNAL("clicked()"), self.exitApp)
         self.connect(self.workerThread, SIGNAL("changed(QString)"), self.updateLabel)
         self.connect(self.workerThread, SIGNAL("updateProgressbar(QString)"), self.updateProgressbar)        
@@ -60,7 +61,10 @@ class Program(QDialog, mainGui.Ui_Dialog):
         self.textBrowser.append(text)    
           
     def threadDone(self):
-        QMessageBox.warning(self, "Error", "Python not found! Please install it first.")      
+        QMessageBox.information(self, "Info", "Update completed!")
+    
+    def exceptionFound(self):
+        QMessageBox.critical(self, "Error", "Python not found! Please install it first.") 
       
     def exitApp(self):
         sys.exit(0)
@@ -74,12 +78,11 @@ class WorkerThread(QThread):
     def run(self):                      
                 
         try:
-           python_version = subprocess.check_output("Python --version") 
+           subprocess.check_output("Python --version") 
         
            self.emit(SIGNAL("changed(QString)"), "Updating...")
             
-           batcmd="pip freeze"
-           dists = subprocess.check_output(batcmd)
+           dists = subprocess.check_output("pip freeze")
             
            #converts the cmd output from a string to a list
            line = []
@@ -119,6 +122,8 @@ class WorkerThread(QThread):
             #finalize the UI after updating           
            self.emit(SIGNAL("updateProgressbar(QString)"), str(100)) 
            self.emit(SIGNAL("changed(QString)"), "Finished!")
+           self.emit(SIGNAL("appendToTextBrowser(QString)"), "Done!")
+           self.emit(SIGNAL("threadDone()"))
                 
         except OSError as e:
             self.emit(SIGNAL("exception()"))
