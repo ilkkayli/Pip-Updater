@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'main.ui'
 #
-# Created: Thu Nov 26 10:06:33 2015
+# Created: Fri Nov 27 08:24:01 2015
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -36,9 +36,6 @@ class Ui_Dialog(object):
         self.showDetailsButton.setGeometry(QtCore.QRect(70, 150, 75, 23))
         self.showDetailsButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.showDetailsButton.setObjectName("showDetailsButton")
-        self.hideDetailsButton = QtGui.QPushButton(Dialog)
-        self.hideDetailsButton.setGeometry(QtCore.QRect(70, 150, 75, 23))
-        self.hideDetailsButton.setObjectName("hideDetailsButton")
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -49,5 +46,4 @@ class Ui_Dialog(object):
         self.quitButton.setText(QtGui.QApplication.translate("Dialog", "Quit", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Dialog", "Ready to update", None, QtGui.QApplication.UnicodeUTF8))
         self.showDetailsButton.setText(QtGui.QApplication.translate("Dialog", "Details", None, QtGui.QApplication.UnicodeUTF8))
-        self.hideDetailsButton.setText(QtGui.QApplication.translate("Dialog", "Hide Details", None, QtGui.QApplication.UnicodeUTF8))
 

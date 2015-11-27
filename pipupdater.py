@@ -28,12 +28,10 @@ class Program(QDialog, mainGui.Ui_Dialog):
         self.connect(self.workerThread, SIGNAL("updateProgressbar(QString)"), self.updateProgressbar)        
         self.connect(self.workerThread, SIGNAL("appendToTextBrowser(QString)"), self.updateTextBrowser)        
         
-        #next four lines are for toggling textbrowser visibility. There might be a more sophisticated way to do this..
-        self.connect(self.showDetailsButton, SIGNAL("clicked()"), self.showTextBrowser)         
+        #next three lines are for toggling textbrowser visibility. 
+        self.connect(self.showDetailsButton, SIGNAL("clicked()"), self.toggleTextBrowser)         
         self.textBrowser.hide() #hide textbrowser by default
         self.resize(461, 200)
-        self.connect(self.hideDetailsButton, SIGNAL("clicked()"), self.hideTextBrowser)
-        self.hideDetailsButton.hide()
               
     #initializes the workerThread that does the upgrading   
     def getDists(self):
@@ -44,18 +42,17 @@ class Program(QDialog, mainGui.Ui_Dialog):
         
     def updateProgressbar(self, val):
         self.progressBar.setValue(int(val))
-        
-    def showTextBrowser(self): 
-        self.textBrowser.show()
-        self.hideDetailsButton.show()
-        self.showDetailsButton.hide()
-        self.resize(461, 444)
-        
-    def hideTextBrowser(self): 
-        self.textBrowser.hide()
-        self.showDetailsButton.show()
-        self.hideDetailsButton.hide()
-        self.resize(461, 200)
+    
+    # shows/hides the textbrowser and resizes the dialog as well
+    def toggleTextBrowser(self):
+        if self.textBrowser.isHidden():
+            self.showDetailsButton.setText("Hide Details")
+            self.textBrowser.show()
+            self.resize(461, 444)
+        else:
+            self.showDetailsButton.setText("Details")
+            self.textBrowser.hide()
+            self.resize(461, 200)
         
     def updateTextBrowser(self, text):
         self.textBrowser.append(text)    
